@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use std::env;
 use std::ffi::OsStr;
 
@@ -5,9 +6,12 @@ use fuse::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry, Request,
 };
 use libc::ENOENT;
+use sha1::Sha1;
 use time::Timespec;
 
-const FILES_COUNT: u64 = 1_000;
+const FILES_COUNT: u64 = 10_000;
+const FILE_SIZE: u64 = 1_048_576; // bytes (1 megabyte)
+const BLOCK_SIZE: usize = 20; // bytes (the size of SHA-1 digest)
 
 const TTL: Timespec = Timespec { sec: 1, nsec: 0 };
 
@@ -32,7 +36,7 @@ const UNIX_EPOCH: Timespec = Timespec { sec: 0, nsec: 0 };
 
 const FILE_ATTR: FileAttr = FileAttr {
     ino: 2,
-    size: 0,
+    size: FILE_SIZE,
     blocks: 1,
     atime: UNIX_EPOCH, // 1970-01-01 00:00:00
     mtime: UNIX_EPOCH,
@@ -47,7 +51,10 @@ const FILE_ATTR: FileAttr = FileAttr {
     flags: 0,
 };
 
-struct MazeFS;
+struct MazeFS {
+    /// Initial value of our bespoke RNG.
+    seed: u64,
+}
 
 impl Filesystem for MazeFS {
     fn lookup(&mut self, _req: &Request, parent: u64, name: &OsStr, reply: ReplyEntry) {
@@ -84,12 +91,23 @@ impl Filesystem for MazeFS {
         _req: &Request,
         ino: u64,
         _fh: u64,
-        _offset: i64,
-        _size: u32,
+        offset: i64,
+        size: u32,
         reply: ReplyData,
     ) {
         if ino >= 2 && ino <= (FILES_COUNT + 1) {
-            reply.data(&[]);
+            let seed = generate_file_seed(self.seed, ino);
+
+            let first_block = (offset as u64) / (BLOCK_SIZE as u64);
+            let blocks_count = (size as u64 + 2 * BLOCK_SIZE as u64) / (BLOCK_SIZE as u64);
+
+            let mut data = vec![];
+            for block_no in first_block..(first_block + blocks_count) {
+                data.extend(&generate_block_data(seed, block_no));
+            }
+
+            let inside_offset = (offset as usize) % (BLOCK_SIZE as usize);
+            reply.data(&data[inside_offset..(inside_offset + size as usize)]);
         } else {
             reply.error(ENOENT);
         }
@@ -140,5 +158,31 @@ fn main() {
         .iter()
         .map(|o| o.as_ref())
         .collect::<Vec<&OsStr>>();
-    fuse::mount(MazeFS, &mountpoint, &options).unwrap();
+    // TODO: replace PID by a proper source of entropy. Add an option for the user to set their own
+    // seed for reproducibility.
+    fuse::mount(
+        MazeFS {
+            seed: std::process::id() as u64,
+        },
+        &mountpoint,
+        &options,
+    )
+    .unwrap();
+}
+
+fn generate_file_seed(root_seed: u64, inode: u64) -> u64 {
+    let file_salt = "filesalt".as_bytes();
+    let (file_salt, _) = file_salt.split_at(std::mem::size_of::<u64>());
+    // TODO: refactor to make panics impossible.
+    let file_salt: [u8; 8] = file_salt.try_into().unwrap();
+    let file_salt = u64::from_le_bytes(file_salt);
+
+    // TODO: replace XOR with a better mixing technique.
+    root_seed ^ inode ^ file_salt
+}
+
+fn generate_block_data(seed: u64, block_no: u64) -> [u8; BLOCK_SIZE] {
+    let mut sha1 = Sha1::from(seed.to_le_bytes());
+    sha1.update(&block_no.to_le_bytes());
+    sha1.digest().bytes()
 }
