@@ -66,7 +66,11 @@ impl Filesystem for MazeFS {
         match name.to_str().and_then(|s| s.parse::<u64>().ok()) {
             Some(file_number) => {
                 if file_number < FILES_COUNT {
-                    reply.entry(&TTL, &FILE_ATTR, 0);
+                    let file_attr = FileAttr {
+                        ino: file_number + 2,
+                        ..FILE_ATTR
+                    };
+                    reply.entry(&TTL, &file_attr, 0);
                 } else {
                     reply.error(ENOENT);
                 }
@@ -80,7 +84,8 @@ impl Filesystem for MazeFS {
         if ino == 1 {
             reply.attr(&TTL, &ROOT_DIR_ATTR);
         } else if ino >= 2 && ino <= (FILES_COUNT + 1) {
-            reply.attr(&TTL, &FILE_ATTR);
+            let file_attr = FileAttr { ino, ..FILE_ATTR };
+            reply.attr(&TTL, &file_attr);
         } else {
             reply.error(ENOENT);
         }
