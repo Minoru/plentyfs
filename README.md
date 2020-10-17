@@ -5,6 +5,8 @@ demand.
 
 Developed [at the request of Lars Wirzenius](https://toot.liw.fi/@liw/105028618188354731).
 
+Licensed under the [Blue Oak Model License 1.0.0](LICENSE.md).
+
 ## Dependencies
 
 - Rust and Cargo (tested with Rust 1.47.0)
