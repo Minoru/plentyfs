@@ -1,4 +1,4 @@
-# MazeFS
+# PlentyFS
 
 A proof-of-concept for a read-only filesystem with random contents generated on
 demand.
@@ -28,7 +28,7 @@ files (1,000) of fixed size (1 megabyte each). The only thing that's random is
 the contents of the file.
 
 Upon mounting, we take the PID of the fuse program. That's our "root seed", and
-it's the only value that MazeFS stores in memory. Everything else is computed
+it's the only value that PlentyFS stores in memory. Everything else is computed
 from it and the meta-information.
 
 Upon each `read()`, we generate the blocks that contain requested data. To do
@@ -51,6 +51,12 @@ Details of this implementation:
 
 ### Benchmarks
 
-On Intel i7-7700HQ, `tar -cvf /dev/shm/mazefs.tar /mnt` achieves 115 MB/s. Note
-that `/dev/shm/` is a `tempfs`. The speed was limited by this program, which
-maxed out a single core for the whole duration of the benchmark.
+On Intel i7-7700HQ, `tar -cvf /dev/shm/plentyfs.tar /mnt` achieves 115 MB/s.
+Note that `/dev/shm/` is a `tempfs`. The speed was limited by this program,
+which maxed out a single core for the whole duration of the benchmark.
+
+## Why the name
+
+Horn of plenty (conrnucopia) is a small object overflowing with food and riches.
+Similarly, PlentyFS is a tiny filesystem containing as much data as you can
+consume.

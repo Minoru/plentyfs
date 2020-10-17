@@ -44,7 +44,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "mazefs"
+name = "pkg-config"
+version = "0.3.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3831453b3449ceb48b6d9c7ad7c96d5ea673e9b470a1dc578c2ce6521230884c"
+
+[[package]]
+name = "plentyfs"
 version = "0.1.0"
 dependencies = [
  "fuse",
@@ -52,12 +58,6 @@ dependencies = [
  "sha1",
  "time",
 ]
-
-[[package]]
-name = "pkg-config"
-version = "0.3.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3831453b3449ceb48b6d9c7ad7c96d5ea673e9b470a1dc578c2ce6521230884c"
 
 [[package]]
 name = "sha1"

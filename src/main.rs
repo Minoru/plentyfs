@@ -51,12 +51,12 @@ const FILE_ATTR: FileAttr = FileAttr {
     flags: 0,
 };
 
-struct MazeFS {
+struct PlentyFS {
     /// Initial value of our bespoke RNG.
     seed: u64,
 }
 
-impl Filesystem for MazeFS {
+impl Filesystem for PlentyFS {
     fn lookup(&mut self, _req: &Request, parent: u64, name: &OsStr, reply: ReplyEntry) {
         if parent != 1 {
             reply.error(ENOENT);
@@ -159,14 +159,14 @@ impl Filesystem for MazeFS {
 
 fn main() {
     let mountpoint = env::args_os().nth(1).unwrap();
-    let options = ["-o", "ro", "-o", "fsname=mazefs"]
+    let options = ["-o", "ro", "-o", "fsname=plentyfs"]
         .iter()
         .map(|o| o.as_ref())
         .collect::<Vec<&OsStr>>();
     // TODO: replace PID by a proper source of entropy. Add an option for the user to set their own
     // seed for reproducibility.
     fuse::mount(
-        MazeFS {
+        PlentyFS {
             seed: std::process::id() as u64,
         },
         &mountpoint,
