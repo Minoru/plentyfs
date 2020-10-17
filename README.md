@@ -13,6 +13,26 @@ Licensed under the [Blue Oak Model License 1.0.0](LICENSE.md).
 - fuse (including the headers, that's `libfuse-dev` on Debian) (tested with
     2.9.9)
 
+## How to run
+
+In the root of the repo:
+
+```
+mkdir mnt
+cargo run --release mnt
+```
+
+This will mount PlentyFS into `mnt` directory and block. You can work with the
+directory in a different terminal.
+
+Once you're done, cd to the root of the repo and call:
+
+```
+fusermount -u mnt
+```
+
+This will unmount PlentyFS and release the first terminal.
+
 ## Architecture
 
 ### Requirements
