@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+# Format subplot (plentyfs.md), generate test program, and run it.
+
+set -euo pipefail
+
+sp-docgen plentyfs.md -o plentyfs.pdf
+sp-docgen plentyfs.md -o plentyfs.html
+sp-codegen plentyfs.md -o test.py
+rm -f test.log
+python3 test.py --log test.log
