@@ -46,7 +46,7 @@ The filesystem should:
 ### The architecture under test
 
 For this PoC, the FS contains a single directory (root) with a fixed number of
-files (1,000) of fixed size (1 megabyte each). The only thing that's random is
+files (10,000) of fixed size (1 megabyte each). The only thing that's random is
 the contents of the file.
 
 Upon mounting, we take the PID of the fuse program. That's our "root seed", and
