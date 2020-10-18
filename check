@@ -4,6 +4,8 @@
 
 set -euo pipefail
 
+cargo build
+
 sp-docgen plentyfs.md -o plentyfs.pdf
 sp-docgen plentyfs.md -o plentyfs.html
 sp-codegen plentyfs.md -o test.py
