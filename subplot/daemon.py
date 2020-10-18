@@ -28,7 +28,7 @@ def start_daemon(ctx, name, argv):
     runcmd_run(
         ctx,
         [
-            "/usr/sbin/daemonize",
+            "daemonize",
             "-c",
             os.getcwd(),
             "-p",
