@@ -1,0 +1,6 @@
+- given: a PlentyFS mounted at {dirname}
+  function: mount_plentyfs
+  cleanup: unmount_plentyfs
+
+- then: there are {count} files under {dirname}
+  function: file_count_is
