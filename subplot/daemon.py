@@ -10,6 +10,7 @@ import signal
 # Start a process in the background.
 def start_daemon(ctx, name, argv):
     runcmd_run = globals()["runcmd_run"]
+    runcmd_prepend_to_path = globals()["runcmd_prepend_to_path"]
     runcmd_exit_code_is = globals()["runcmd_exit_code_is"]
 
     logging.debug(f"Starting daemon {name}")
@@ -25,6 +26,7 @@ def start_daemon(ctx, name, argv):
         "stderr": f"{name}.stderr",
         "stdout": f"{name}.stdout",
     }
+    runcmd_prepend_to_path(ctx, "/usr/sbin")
     runcmd_run(
         ctx,
         [
