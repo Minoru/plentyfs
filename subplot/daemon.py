@@ -43,6 +43,16 @@ def start_daemon(ctx, name, argv):
         + argv,
     )
     runcmd_exit_code_is(ctx, 0)
+
+    # Wait at most two seconds for the sub-process to start and write its PID
+    # into the file.
+    started = time.time()
+    timeout = 2.0 # seconds
+    while time.time() < started + timeout:
+        pid_str = open(this["pid-file"]).read().strip()
+        if pid_str != "":
+            break
+
     this["pid"] = int(open(this["pid-file"]).read().strip())
     assert process_exists(this["pid"])
 
