@@ -1,0 +1,35 @@
+name: ./check
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    name: "Run ./check on Ubuntu 18.04"
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Add Subplot repo
+        run: sudo sh -c 'echo "deb http://ci-prod-controller.vm.liw.fi/debian unstable-ci main" > /etc/apt/sources.list.d/subplot.list'
+
+      - name: Add Subplot repo key
+        run: echo -e '-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nmQINBFrLO7kBEADdz6mHstYmKU5Dp6OSjxWtWaqTDOX1sJdmmaIK/9EKVIH0Maxp\n5kvVO5G6mULLAjv/kLG0MxasHPrq8I2A/y8AqKAGVL8QelwLjQMIFZ30/VbGQPHS\n+T5TZXEnoQtNce1GUhFwJ38ZyjjwHBFV9tSec7rZ2Q3YeM3nNnGPf6DacXGfEOPO\nHIN4sXAN2hzNXNjKRzTIvxQseb6nr7afUh/SlZ3yhQOCrIzmYlD7tP9WJe7ofL0p\nJY4pDQYw8rT6nC2BE/ioemh84kERCT1vCe+OVFlSRuMlqfEv+ZpKQ+itOmPDQ/lM\njpUm1K2hrW/lWpxT/ZxHKo/w1K36J5WshgMZxfUu5BMCL9LMqMcrXNhNjDMfxDMM\n3yBPOvQ4ls6fecOZ/bsFo1p8VzMk/w/eG8vPs5yuNa5XxN95yFMXoOHGb5Xbu8D4\n6yiW+Af70LbiSNpGdmNdneiGB2fY38NxBukPw5u3S5qG8HedSmMr1RvSr5kHoAAe\nUbOY+BYaaKsTAT7+1skUW1o3FJSqoRKCHAzTsMWC6zzhR8hRn7jVrrguH1hGbqq5\nTZSCFQZExuTJ7uXrTLG0WoBXIjB5wWNcSeXn8myUWYB51nJNF4tJBouZOz9JwWGl\nkiAQkrHnBttLQWdW9FyjbIoTZMtpvVx+m6ObGTGdGL1cNlLAvWprMXGc+QARAQAB\ntDJJY2sgQVBUIHJlcG9zaXRvcnkgc2lnbmluZyBrZXkgKDIwMTgpIDxsaXdAbGl3\nLmZpPokCTgQTAQgAOBYhBKL1uyDoXyxUH3O717Wr+TZVS6PGBQJayzu5AhsDBQsJ\nCAcCBhUICQoLAgQWAgMBAh4BAheAAAoJELWr+TZVS6PGB5QQANTcikhRUHwt9N4h\ndGc/Hp6CbqdshMoWlwpFskttoVDxQG5OAobuZl5XyzGcmja1lT85RGkZFfbca0IZ\nLnXOLLSAu51QBkXNaj4OhjK/0uQ+ITrvL6RQSXNgHiUTR/W2XD1GIUq6nBqe2GSN\n31S1baYKKVj5QIMsi7Dq8ls3BBXuPCE+xTSaNmGWjes2t9pPidcRvxsksCLY1qgw\nP1GFXBeMkBQ29kBP87SUL15SIk7OiQLlEURCy5iRls5rt/YEsdEpRWIb0Tm5Nrjv\n2M3VM+iBhfNXTwj0rJ34mlycF1qQmA7YcTEobT7z587GPY0VWzBpQUnEQj7rQWPM\ncDYY0b+I6kQ8VKOaL4wVAtE98d7HzFIrIrwhTKufnrWrVDPYsmLZ+LPC1jiF7JBD\nSR6Vftb+SdDR9xoE1yRuXbC6IfoW+5/qQNrdQ2mm9BFw5jOonBqchs18HTTf3441\n6SWwP9fY3Vi+IZphPPi0Gf85oMStgnv/Wnw6LacEL32ek39Desero/D8iGLZernK\nQ2mC9mua5A/bYGVhsNWyURNFkKdbFa+/wW3NfdKYyZnsSfo+jJ2luNewrhAY7Kod\nGWXTer9RxzTGA3EXFGvNr+BBOOxSj0SfWTl0Olo7J5dnxof+jLAUS1VHpceHGHps\nGSJSdir7NkZidgwoCPA7BTqsb5LN\n=dXB0\n-----END PGP PUBLIC KEY BLOCK-----' | sudo apt-key add -
+
+      - name: Install Subplot
+        run: sudo apt-get update && sudo apt-get install --assume-yes subplot daemonize pandoc-citeproc python3 texlive-latex-base texlive-fonts-recommended
+
+      - name: Install PlentyFS dependencies
+        run: sudo apt-get install --assume-yes pkg-config libfuse-dev fuse
+
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v2
+        with:
+          key: ${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/registry/cache
+            ~/.cargo/registry/index
+
+      - name: Run ./check (print out the log if that fails)
+        run: ./check || (cat test.log && exit 1)
