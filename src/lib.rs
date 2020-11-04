@@ -1,6 +1,5 @@
-use std::convert::TryInto;
-use std::env;
 use std::ffi::OsStr;
+use std::convert::TryInto;
 
 use fuse::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry, Request,
@@ -51,9 +50,17 @@ const FILE_ATTR: FileAttr = FileAttr {
     flags: 0,
 };
 
-struct PlentyFS {
+/// A structure representing a mounted instance of PlentyFS.
+pub struct PlentyFS {
     /// Initial value of our bespoke RNG.
     seed: u64,
+}
+
+impl PlentyFS {
+    /// Create new instance with a given seed.
+    pub fn new(seed: u64) -> PlentyFS {
+        PlentyFS { seed }
+    }
 }
 
 impl Filesystem for PlentyFS {
@@ -155,24 +162,6 @@ impl Filesystem for PlentyFS {
         }
         reply.ok();
     }
-}
-
-fn main() {
-    let mountpoint = env::args_os().nth(1).unwrap();
-    let options = ["-o", "ro", "-o", "fsname=plentyfs"]
-        .iter()
-        .map(|o| o.as_ref())
-        .collect::<Vec<&OsStr>>();
-    // TODO: replace PID by a proper source of entropy. Add an option for the user to set their own
-    // seed for reproducibility.
-    fuse::mount(
-        PlentyFS {
-            seed: std::process::id() as u64,
-        },
-        &mountpoint,
-        &options,
-    )
-    .unwrap();
 }
 
 fn generate_file_seed(root_seed: u64, inode: u64) -> u64 {
