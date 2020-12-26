@@ -27,6 +27,7 @@ then there are 10000 files under mnt
 ---
 title: PlentyFS - read-only, on-demand file system
 author: Alexander Batischev
+template: python
 bindings:
 - subplot/plentyfs.yaml
 functions:
