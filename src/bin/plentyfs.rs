@@ -1,5 +1,5 @@
-use std::ffi::OsStr;
 use std::env;
+use std::ffi::OsStr;
 
 use plentyfs::PlentyFS;
 
@@ -11,11 +11,10 @@ fn main() {
         .collect::<Vec<&OsStr>>();
     // TODO: replace PID by a proper source of entropy. Add an option for the user to set their own
     // seed for reproducibility.
-    fuse::mount(
+    fuser::mount(
         PlentyFS::new(std::process::id() as u64),
         &mountpoint,
         &options,
     )
     .unwrap();
 }
-

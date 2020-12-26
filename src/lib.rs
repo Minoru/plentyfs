@@ -1,18 +1,22 @@
-use std::ffi::OsStr;
 use std::convert::TryInto;
+use std::ffi::OsStr;
 
-use fuse::{
+use fuser::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry, Request,
 };
 use libc::ENOENT;
 use sha1::Sha1;
-use time::Timespec;
+use std::time::{Duration, UNIX_EPOCH};
 
 const FILES_COUNT: u64 = 10_000;
 const FILE_SIZE: u64 = 1_048_576; // bytes (1 megabyte)
 const BLOCK_SIZE: usize = 20; // bytes (the size of SHA-1 digest)
 
-const TTL: Timespec = Timespec { sec: 1, nsec: 0 };
+// This is the default on modern drives, and we don't care much about this value anyway because we
+// haven't done any performance tuning yet.
+const REPORTED_BLOCK_SIZE: u32 = 4096;
+
+const TTL: Duration = Duration::from_secs(1);
 
 const ROOT_DIR_ATTR: FileAttr = FileAttr {
     ino: 1,
@@ -29,9 +33,9 @@ const ROOT_DIR_ATTR: FileAttr = FileAttr {
     gid: 0,
     rdev: 0,
     flags: 0,
+    blksize: REPORTED_BLOCK_SIZE,
+    padding: 0,
 };
-
-const UNIX_EPOCH: Timespec = Timespec { sec: 0, nsec: 0 };
 
 const FILE_ATTR: FileAttr = FileAttr {
     ino: 2,
@@ -48,6 +52,8 @@ const FILE_ATTR: FileAttr = FileAttr {
     gid: 0,
     rdev: 0,
     flags: 0,
+    blksize: REPORTED_BLOCK_SIZE,
+    padding: 0,
 };
 
 /// A structure representing a mounted instance of PlentyFS.
@@ -105,6 +111,8 @@ impl Filesystem for PlentyFS {
         _fh: u64,
         offset: i64,
         size: u32,
+        _flags: i32,
+        _lock_owner: Option<u64>,
         reply: ReplyData,
     ) {
         if ino >= 2 && ino <= (FILES_COUNT + 1) {
@@ -139,11 +147,13 @@ impl Filesystem for PlentyFS {
         }
 
         if offset == 0 {
-            reply.add(1, 1, FileType::Directory, ".");
+            // TODO: handle possibility of buffer being full
+            let _ = reply.add(1, 1, FileType::Directory, ".");
         }
 
         if offset <= 1 {
-            reply.add(1, 1, FileType::Directory, ".");
+            // TODO: handle possibility of buffer being full
+            let _ = reply.add(1, 1, FileType::Directory, ".");
         }
 
         if offset >= 2 {
@@ -153,7 +163,8 @@ impl Filesystem for PlentyFS {
         for file_number in (0..FILES_COUNT).skip(offset as usize) {
             let inode = file_number + 2;
             let next_entry_offset = 2 + file_number + 1;
-            reply.add(
+            // TODO: handle possibility of buffer being full
+            let _ = reply.add(
                 inode,
                 next_entry_offset as i64,
                 FileType::RegularFile,
