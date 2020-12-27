@@ -3,7 +3,7 @@ use std::ffi::OsStr;
 
 use getopts::Options;
 
-use plentyfs::PlentyFS;
+use plentyfs::fs::PlentyFS;
 
 const EXIT_SUCCESS: i32 = 0;
 const EXIT_FAILURE: i32 = 1;
