@@ -1,11 +1,29 @@
 use std::env;
 use std::ffi::OsStr;
 
+use getopts::Options;
+
 use plentyfs::PlentyFS;
 
+const EXIT_SUCCESS: i32 = 0;
+const EXIT_FAILURE: i32 = 1;
+
 fn main() {
-    let mountpoint = env::args_os().nth(1).unwrap();
-    let options = ["-o", "ro", "-o", "fsname=plentyfs"]
+    let argv = env::args_os().collect::<Vec<_>>();
+
+    let options = Options::new();
+    let matches = match options.parse(&argv[1..]) {
+        Ok(m) => m,
+        Err(f) => panic!(f.to_string()),
+    };
+
+    if matches.free.is_empty() {
+        eprintln!("Error: no mountpoint specified.");
+        std::process::exit(EXIT_FAILURE);
+    }
+    let mountpoint = &matches.free[0];
+
+    let fuse_options = ["-o", "ro", "-o", "fsname=plentyfs"]
         .iter()
         .map(|o| o.as_ref())
         .collect::<Vec<&OsStr>>();
@@ -14,7 +32,9 @@ fn main() {
     fuser::mount(
         PlentyFS::new(std::process::id() as u64),
         &mountpoint,
-        &options,
+        &fuse_options,
     )
     .unwrap();
+
+    std::process::exit(EXIT_SUCCESS);
 }

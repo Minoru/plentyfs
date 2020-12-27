@@ -33,6 +33,13 @@ def unmount_plentyfs(ctx):
     runcmd_exit_code_is(ctx, 0)
 
 
+def run_plentyfs(ctx):
+    runcmd_run = globals()["runcmd_run"]
+    srcdir = globals()["srcdir"]
+    plentyfs = os.path.join(srcdir, "target", "debug", "plentyfs")
+    runcmd_run(ctx, [plentyfs])
+
+
 def file_count_is(ctx, count=None, dirname=None):
     logging.debug(f"counting files under {dirname}")
     n = 0
@@ -46,3 +53,11 @@ def file_count_is(ctx, count=None, dirname=None):
 
     assert_eq = globals()["assert_eq"]
     assert_eq(int(count), n)
+
+
+def stdout_is_empty(ctx):
+    runcmd_get_stdout = globals()["runcmd_get_stdout"]
+    assert_eq = globals()["assert_eq"]
+
+    stdout = runcmd_get_stdout(ctx)
+    assert_eq(stdout, "")
