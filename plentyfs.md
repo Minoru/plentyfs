@@ -31,8 +31,8 @@ template: python
 bindings:
 - subplot/plentyfs.yaml
 functions:
+- subplot/daemon.py
 - subplot/plentyfs.py
 - subplot/runcmd.py
-- subplot/daemon.py
 ...
 
