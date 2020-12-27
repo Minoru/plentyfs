@@ -5,6 +5,9 @@ use getopts::Options;
 
 use plentyfs::PlentyFS;
 
+const EXIT_SUCCESS: i32 = 0;
+const EXIT_FAILURE: i32 = 1;
+
 fn main() {
     let argv = env::args_os().collect::<Vec<_>>();
 
@@ -15,8 +18,8 @@ fn main() {
     };
 
     if matches.free.is_empty() {
-        eprintln!("No mountpoint specified.");
-        return;
+        eprintln!("Error: no mountpoint specified.");
+        std::process::exit(EXIT_FAILURE);
     }
     let mountpoint = &matches.free[0];
 
@@ -32,4 +35,6 @@ fn main() {
         &fuse_options,
     )
     .unwrap();
+
+    std::process::exit(EXIT_SUCCESS);
 }

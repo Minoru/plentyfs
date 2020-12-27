@@ -2,5 +2,11 @@
   function: mount_plentyfs
   cleanup: unmount_plentyfs
 
+- when: user runs PlentyFS without arguments
+  function: run_plentyfs
+
 - then: there are {count} files under {dirname}
   function: file_count_is
+
+- then: stdout is empty
+  function: stdout_is_empty

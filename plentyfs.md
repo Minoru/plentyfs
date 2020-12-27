@@ -23,6 +23,15 @@ then there are 10000 files under mnt
 ~~~
 
 
+## If no mount point is specified, PlentyFS exits with an error
+
+~~~scenario
+when user runs PlentyFS without arguments
+then exit code is 1
+then stdout is empty
+then stderr is exactly "Error: no mountpoint specified.\n"
+~~~
+
 
 ---
 title: PlentyFS - read-only, on-demand file system
@@ -30,6 +39,7 @@ author: Alexander Batischev
 template: python
 bindings:
 - subplot/plentyfs.yaml
+- subplot/runcmd.yaml
 functions:
 - subplot/daemon.py
 - subplot/plentyfs.py
