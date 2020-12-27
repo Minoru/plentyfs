@@ -114,7 +114,9 @@ def runcmd_step(ctx, argv0=None, args=None):
 
 
 def runcmd_try_to_run(ctx, argv0=None, args=None):
-    argv = [shlex.quote(argv0)] + shlex.split(args)
+    argv = [shlex.quote(argv0)]
+    if args is not None:
+        argv.extend(shlex.split(args))
     runcmd_run(ctx, argv)
 
 

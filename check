@@ -5,6 +5,7 @@
 set -euo pipefail
 
 cargo build
+cargo test
 
 sp-docgen plentyfs.md -o plentyfs.pdf
 sp-docgen plentyfs.md -o plentyfs.html
