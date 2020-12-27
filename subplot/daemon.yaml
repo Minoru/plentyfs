@@ -1,0 +1,17 @@
+- given: there is no "{args:text}" process
+  function: daemon_no_such_process
+
+- when: I start "{path}{args:text}" as a background process as {name}, on port {port}
+  function: daemon_start_on_port
+
+- when: I start "{path}{args:text}" as a background process as {name}
+  function: daemon_start
+
+- when: I stop background process {name}
+  function: daemon_stop
+
+- then: a process "{args:text}" is running
+  function: daemon_process_exists
+
+- then: there is no "{args:text}" process
+  function: daemon_no_such_process

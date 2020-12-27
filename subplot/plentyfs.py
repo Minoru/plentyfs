@@ -7,11 +7,11 @@ def mount_plentyfs(ctx, dirname=None):
     logging.info(f"starting plentyfs at {dirname}")
 
     srcdir = globals()["srcdir"]
-    start_daemon = globals()["start_daemon"]
+    daemon_start = globals()["daemon_start"]
 
     os.mkdir(dirname)
     plentyfs = os.path.join(srcdir, "target", "debug", "plentyfs")
-    start_daemon(ctx, "plentyfs", [plentyfs, dirname])
+    daemon_start(ctx, plentyfs, dirname)
 
     # Wait for plentyfs to have started, up to two seconds.
     started = time.time()
