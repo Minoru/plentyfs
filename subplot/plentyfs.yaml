@@ -2,6 +2,10 @@
   function: mount_plentyfs
   cleanup: unmount_plentyfs
 
+- given: a PlentyFS mounted at {dirname} with options {options}
+  function: mount_plentyfs
+  cleanup: unmount_plentyfs
+
 - when: user runs PlentyFS without arguments
   function: run_plentyfs
 
@@ -10,3 +14,6 @@
 
 - then: stdout is empty
   function: stdout_is_empty
+
+- then: there are a file at {path} that starts with 0x{prefix}
+  function: file_has_prefix
