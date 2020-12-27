@@ -33,6 +33,16 @@ then stderr is exactly "Error: no mountpoint specified.\n"
 ~~~
 
 
+## If mount option is not supported, PlentyFS exits with an error
+
+~~~scenario
+when user runs PlentyFS with arguments -o tunable=disabled mnt
+then exit code is 1
+then stdout is empty
+then stderr is exactly "Error: parameter `tunable' is not supported.\n"
+~~~
+
+
 ## User can specify a 64-bit seed
 
 PlentyFS generates data at random, but it's a program, so it can't conjure true
@@ -48,12 +58,32 @@ environment.
 To enable that, PlentyFS lets the user to optionally pass a seed as a mount
 option.
 
+### Happy path
+
 ~~~scenario
 given a PlentyFS mounted at mnt with options seed=b1a914b7e0d996a8
 then there are a file at mnt/1 that starts with 0x1df2c952085c9471
 then there are a file at mnt/2 that starts with 0x7e56b30ef2e3d19b
 then there are a file at mnt/3 that starts with 0xf2319fa6ef40322c
 then there are a file at mnt/5 that starts with 0x307de35f4d9ad2a1
+~~~
+
+### Errors if seed is not hexadecimal
+
+~~~scenario
+when user runs PlentyFS with arguments -o seed=random mnt
+then exit code is 1
+then stdout is empty
+then stderr is exactly "Error: value `random' for parameter `seed' is not a hexadecimal number.\n"
+~~~
+
+### Errors if seed is longer than 16 characters
+
+~~~scenario
+when user runs PlentyFS with arguments -o seed=abba0110f00dba7abba0202 mnt
+then exit code is 1
+then stdout is empty
+then stderr is exactly "Error: value `abba0110f00dba7abba0202' is too long for parameter `seed'; maximum allowed length is 16 characters.\n"
 ~~~
 
 
