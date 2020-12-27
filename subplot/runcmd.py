@@ -49,7 +49,16 @@ def runcmd_get_argv(ctx):
 # ctx context.
 def runcmd_run(ctx, argv, **kwargs):
     ns = ctx.declare("_runcmd")
+
+    # The Subplot Python template empties os.environ at startup, modulo a small
+    # number of variables with carefully chosen values. Here, we don't need to
+    # care about what those variables are, but we do need to not overwrite
+    # them, so we just add anything in the env keyword argument, if any, to
+    # os.environ.
     env = dict(os.environ)
+    for key, arg in kwargs.pop("env", {}).items():
+        env[key] = arg
+
     pp = ns.get("path-prefix")
     if pp:
         env["PATH"] = pp + ":" + env["PATH"]
