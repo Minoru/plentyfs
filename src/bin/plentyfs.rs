@@ -32,6 +32,9 @@ fn main() {
                 UpdateError::NonHexValue { parameter, value } =>
                     eprintln!("Error: value `{}' for parameter `{}' is not a hexadecimal number.", value, parameter),
 
+                UpdateError::NoValue { parameter } =>
+                    eprintln!("Error: parameter `{}' requires a value.", parameter),
+
                 UpdateError::ValueTooLong { parameter, value, max_allowed_length } =>
                     eprintln!("Error: value `{}' is too long for parameter `{}'; maximum allowed length is {} characters.", value, parameter, max_allowed_length),
 

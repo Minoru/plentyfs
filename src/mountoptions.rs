@@ -23,6 +23,11 @@ pub enum UpdateError {
         value: String,
     },
 
+    /// Parameter requires a value, but none/empty one was provided.
+    NoValue {
+        parameter: String,
+    },
+
     ValueTooLong {
         parameter: String,
         value: String,
@@ -40,47 +45,62 @@ impl MountOptions {
     /// fields of `MountOptions`.
     pub fn update_from(&mut self, parameters: &str) -> Result<(), UpdateError> {
         for key_value in parameters.split(',') {
-            if let Some(offset) = key_value.find('=') {
-                let (parameter, value) = key_value.split_at(offset);
-                // Drop the leading '='.
-                let value = &value[1..];
-
-                match parameter {
-                    "seed" => {
-                        if let Some(_) = value.find(|c: char| !c.is_ascii_hexdigit()) {
-                            return Err(UpdateError::NonHexValue {
-                                parameter: parameter.to_string(),
-                                value: value.to_string(),
-                            });
-                        }
-
-                        if value.len() > 16 {
-                            return Err(UpdateError::ValueTooLong {
-                                max_allowed_length: 16,
-                                parameter: parameter.to_string(),
-                                value: value.to_string(),
-                            });
-                        }
-
-                        self.seed = u64::from_str_radix(value, 16).expect("Failed to parse string as hexadecimal number despite running checks on it beforehand");
+            let (parameter, value) = split_key_value(key_value);
+            match parameter {
+                "seed" => {
+                    if value.is_empty() {
+                        return Err(UpdateError::NoValue {
+                            parameter: parameter.to_string(),
+                        });
                     }
 
-                    _ => {
-                        return Err(UpdateError::UnsupportedParameter {
+                    if let Some(_) = value.find(|c: char| !c.is_ascii_hexdigit()) {
+                        return Err(UpdateError::NonHexValue {
                             parameter: parameter.to_string(),
                             value: value.to_string(),
-                        })
+                        });
                     }
+
+                    if value.len() > 16 {
+                        return Err(UpdateError::ValueTooLong {
+                            max_allowed_length: 16,
+                            parameter: parameter.to_string(),
+                            value: value.to_string(),
+                        });
+                    }
+
+                    self.seed = u64::from_str_radix(value, 16).expect("Failed to parse string as hexadecimal number despite running checks on it beforehand");
                 }
-            } else {
-                return Err(UpdateError::UnsupportedParameter {
-                    parameter: key_value.to_string(),
-                    value: String::new()
-                });
+
+                _ => {
+                    return Err(UpdateError::UnsupportedParameter {
+                        parameter: parameter.to_string(),
+                        value: value.to_string(),
+                    })
+                }
             }
         }
 
         Ok(())
+    }
+}
+
+/// Split a key-value pair into the key and the value (which are separated by `=`).
+///
+/// If `kv` contains no separator, the whole input is treated as key, and the value is empty. If
+/// `kv` contains multiple equals signs, the first one is treated as separator. If `kv` is empty,
+/// both the key and the value are empty.
+fn split_key_value(kv: &str) -> (&str, &str) {
+    if let Some(offset) = kv.find('=') {
+        let (key, mut value) = kv.split_at(offset);
+        // Drop the leading `=`.
+        value = &value[1..];
+
+        (key, value)
+    } else {
+        let key = kv;
+
+        (key, "")
     }
 }
 
@@ -141,16 +161,30 @@ mod tests {
             })
         );
 
-        assert_eq!(sut.update_from("will this work?"),
-        Err(UpdateError::UnsupportedParameter{
-            parameter: "will this work?".to_string(),
-            value: String::new()
-        }));
+        assert_eq!(
+            sut.update_from("will this work?"),
+            Err(UpdateError::UnsupportedParameter {
+                parameter: "will this work?".to_string(),
+                value: String::new()
+            })
+        );
+    }
+
+    #[test]
+    fn t_split_key_value() {
+        assert_eq!(split_key_value(""), ("", ""));
+        assert_eq!(split_key_value("hello"), ("hello", ""));
+        assert_eq!(split_key_value("key="), ("key", ""));
+        assert_eq!(split_key_value("another=example"), ("another", "example"));
+        assert_eq!(
+            split_key_value("welcome=to=PlentyFS"),
+            ("welcome", "to=PlentyFS")
+        );
     }
 
     use proptest::prelude::*;
 
-    proptest!{
+    proptest! {
         // We want to make sure that under "normal conditions", `update_from()` updates the seed
         // and returns `OK(())`.
         //
