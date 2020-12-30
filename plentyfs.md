@@ -77,6 +77,22 @@ then stdout is empty
 then stderr is exactly "Error: value `random' for parameter `seed' is not a hexadecimal number.\n"
 ~~~
 
+### Errors if seed is empty
+
+~~~scenario
+when user runs PlentyFS with arguments -o seed mnt
+then exit code is 1
+then stdout is empty
+then stderr is exactly "Error: parameter `seed' requires a value.\n"
+~~~
+
+~~~scenario
+when user runs PlentyFS with arguments -o seed= mnt
+then exit code is 1
+then stdout is empty
+then stderr is exactly "Error: parameter `seed' requires a value.\n"
+~~~
+
 ### Errors if seed is longer than 16 characters
 
 ~~~scenario
