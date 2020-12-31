@@ -153,7 +153,7 @@ impl Filesystem for PlentyFS {
 
         if offset <= 1 {
             // TODO: handle possibility of buffer being full
-            let _ = reply.add(1, 1, FileType::Directory, ".");
+            let _ = reply.add(1, 1, FileType::Directory, "..");
         }
 
         if offset >= 2 {
