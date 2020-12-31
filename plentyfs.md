@@ -116,10 +116,10 @@ author: Alexander Batischev
 template: python
 bindings:
 - subplot/plentyfs.yaml
-- subplot/runcmd.yaml
+- subplot/vendored/runcmd.yaml
 functions:
-- subplot/daemon.py
+- subplot/vendored/daemon.py
 - subplot/plentyfs.py
-- subplot/runcmd.py
+- subplot/vendored/runcmd.py
 ...
 
