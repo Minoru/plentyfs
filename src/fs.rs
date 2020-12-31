@@ -76,31 +76,20 @@ impl Filesystem for PlentyFS {
             return;
         }
 
-        match name.to_str().and_then(|s| s.parse::<u64>().ok()) {
-            Some(file_number) => {
-                if file_number < FILES_COUNT {
-                    let file_attr = FileAttr {
-                        ino: file_number + 2,
-                        ..FILE_ATTR
-                    };
-                    reply.entry(&TTL, &file_attr, 0);
-                } else {
-                    reply.error(ENOENT);
-                }
-            }
-
+        match name
+            .to_str()
+            .and_then(|s| s.parse::<u64>().ok())
+            .and_then(|file_number| inode_to_file_attr(file_number + 2))
+        {
+            Some(attr) => reply.entry(&TTL, &attr, 0),
             None => reply.error(ENOENT),
         }
     }
 
     fn getattr(&mut self, _req: &Request, ino: u64, reply: ReplyAttr) {
-        if ino == 1 {
-            reply.attr(&TTL, &ROOT_DIR_ATTR);
-        } else if ino >= 2 && ino <= (FILES_COUNT + 1) {
-            let file_attr = FileAttr { ino, ..FILE_ATTR };
-            reply.attr(&TTL, &file_attr);
-        } else {
-            reply.error(ENOENT);
+        match inode_to_file_attr(ino) {
+            Some(attr) => reply.attr(&TTL, &attr),
+            None => reply.error(ENOENT),
         }
     }
 
@@ -172,6 +161,19 @@ impl Filesystem for PlentyFS {
             );
         }
         reply.ok();
+    }
+}
+
+/// Convert inode number into a `FileAttr` structure.
+///
+/// Returns `None` if the file doesn't exist.
+fn inode_to_file_attr(ino: u64) -> Option<FileAttr> {
+    if ino == 1 {
+        Some(ROOT_DIR_ATTR)
+    } else if ino >= 2 && ino <= (FILES_COUNT + 1) {
+        Some(FileAttr { ino, ..FILE_ATTR })
+    } else {
+        None
     }
 }
 
