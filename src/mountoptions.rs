@@ -136,6 +136,25 @@ mod tests {
     }
 
     #[test]
+    fn returns_err_value_empty() {
+        let mut sut = MountOptions::default();
+
+        assert_eq!(
+            sut.update_from("seed"),
+            Err(UpdateError::NoValue {
+                parameter: "seed".to_string(),
+            })
+        );
+
+        assert_eq!(
+            sut.update_from("seed="),
+            Err(UpdateError::NoValue {
+                parameter: "seed".to_string(),
+            })
+        );
+    }
+
+    #[test]
     fn returns_err_value_too_long() {
         let mut sut = MountOptions::default();
 
