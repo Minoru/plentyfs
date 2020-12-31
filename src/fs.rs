@@ -76,11 +76,7 @@ impl Filesystem for PlentyFS {
             return;
         }
 
-        match name
-            .to_str()
-            .and_then(|s| s.parse::<u64>().ok())
-            .and_then(|file_number| inode_to_file_attr(file_number + 2))
-        {
+        match filename_to_inode(name).and_then(|ino| inode_to_file_attr(ino)) {
             Some(attr) => reply.entry(&TTL, &attr, 0),
             None => reply.error(ENOENT),
         }
@@ -162,6 +158,17 @@ impl Filesystem for PlentyFS {
         }
         reply.ok();
     }
+}
+
+/// Convert filename into an inode number. Note that the inode might not actually exist.
+///
+/// Returns `None` if conversion couldn't be performed (most probably because the filename is
+/// malformed).
+fn filename_to_inode(name: &OsStr) -> Option<u64> {
+    name.to_str()
+        .and_then(|s| s.parse::<u64>().ok())
+        // Filenames start at 0, but inodes for these files start at 2.
+        .and_then(|file_number| Some(file_number + 2))
 }
 
 /// Convert inode number into a `FileAttr` structure.
