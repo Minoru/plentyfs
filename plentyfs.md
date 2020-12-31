@@ -58,7 +58,7 @@ environment.
 To enable that, PlentyFS lets the user to optionally pass a seed as a mount
 option.
 
-### Happy path
+### PlentyFS accepts `-o seed=<hex>` argument
 
 ~~~scenario
 given a PlentyFS mounted at mnt with options seed=b1a914b7e0d996a8
@@ -68,30 +68,28 @@ then there are a file at mnt/3 that starts with 0xf2319fa6ef40322c
 then there are a file at mnt/5 that starts with 0x307de35f4d9ad2a1
 ~~~
 
-### Errors if seed is not hexadecimal
-
-~~~scenario
-when user runs PlentyFS with arguments -o seed=random mnt
-then exit code is 1
-then stdout is empty
-then stderr is exactly "Error: value `random' for parameter `seed' is not a hexadecimal number.\n"
-~~~
-
 ### Errors if seed is empty
 
-~~~scenario
-when user runs PlentyFS with arguments -o seed mnt
-then exit code is 1
-then stdout is empty
-then stderr is exactly "Error: parameter `seed' requires a value.\n"
-~~~
+There are a couple different ways in which the seed could be empty:
 
-~~~scenario
-when user runs PlentyFS with arguments -o seed= mnt
-then exit code is 1
-then stdout is empty
-then stderr is exactly "Error: parameter `seed' requires a value.\n"
-~~~
+1. the user could type just the name of the parameter:
+
+    ~~~scenario
+    when user runs PlentyFS with arguments -o seed mnt
+    then exit code is 1
+    then stdout is empty
+    then stderr is exactly "Error: parameter `seed' requires a value.\n"
+    ~~~
+
+2. the user could type the name of the parameter and the `=` delimiter, but no
+   actual value:
+
+    ~~~scenario
+    when user runs PlentyFS with arguments -o seed= mnt
+    then exit code is 1
+    then stdout is empty
+    then stderr is exactly "Error: parameter `seed' requires a value.\n"
+    ~~~
 
 ### Errors if seed is longer than 16 characters
 
@@ -100,6 +98,15 @@ when user runs PlentyFS with arguments -o seed=abba0110f00dba7abba0202 mnt
 then exit code is 1
 then stdout is empty
 then stderr is exactly "Error: value `abba0110f00dba7abba0202' is too long for parameter `seed'; maximum allowed length is 16 characters.\n"
+~~~
+
+### Errors if seed is not hexadecimal
+
+~~~scenario
+when user runs PlentyFS with arguments -o seed=random mnt
+then exit code is 1
+then stdout is empty
+then stderr is exactly "Error: value `random' for parameter `seed' is not a hexadecimal number.\n"
 ~~~
 
 
