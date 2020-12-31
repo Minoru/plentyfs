@@ -68,6 +68,7 @@ def stdout_is_empty(ctx):
     stdout = runcmd_get_stdout(ctx)
     assert_eq(stdout, "")
 
+
 def file_has_prefix(ctx, path=None, prefix=None):
     binary_prefix = bytes.fromhex(prefix)
 
@@ -76,3 +77,14 @@ def file_has_prefix(ctx, path=None, prefix=None):
 
     assert_eq = globals()["assert_eq"]
     assert_eq(binary_prefix, actual_prefix)
+
+
+def file_is_not_empty(ctx, path=None):
+    assert_eq = globals()["assert_eq"]
+
+    stat_size = os.stat(path).st_size
+    assert_ne(0, stat_size)
+
+    with open(path, "rb") as f:
+        first_byte = f.read(1)
+    assert_ne(0, len(first_byte))

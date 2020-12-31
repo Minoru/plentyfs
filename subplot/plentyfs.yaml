@@ -21,3 +21,6 @@
 
 - then: there are a file at {path} that starts with 0x{prefix}
   function: file_has_prefix
+
+- then: file {path} is not empty
+  function: file_is_not_empty
