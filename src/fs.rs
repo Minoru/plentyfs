@@ -27,7 +27,7 @@ const ROOT_DIR_ATTR: FileAttr = FileAttr {
     ctime: UNIX_EPOCH,
     crtime: UNIX_EPOCH,
     kind: FileType::Directory,
-    perm: 0o755,
+    perm: 0o555,
     nlink: 2,
     uid: 0,
     gid: 0,
@@ -46,7 +46,7 @@ const FILE_ATTR: FileAttr = FileAttr {
     ctime: UNIX_EPOCH,
     crtime: UNIX_EPOCH,
     kind: FileType::RegularFile,
-    perm: 0o644,
+    perm: 0o444,
     nlink: 1,
     uid: 0,
     gid: 0,
@@ -76,31 +76,16 @@ impl Filesystem for PlentyFS {
             return;
         }
 
-        match name.to_str().and_then(|s| s.parse::<u64>().ok()) {
-            Some(file_number) => {
-                if file_number < FILES_COUNT {
-                    let file_attr = FileAttr {
-                        ino: file_number + 2,
-                        ..FILE_ATTR
-                    };
-                    reply.entry(&TTL, &file_attr, 0);
-                } else {
-                    reply.error(ENOENT);
-                }
-            }
-
+        match filename_to_inode(name).and_then(|ino| inode_to_file_attr(ino)) {
+            Some(attr) => reply.entry(&TTL, &attr, 0),
             None => reply.error(ENOENT),
         }
     }
 
     fn getattr(&mut self, _req: &Request, ino: u64, reply: ReplyAttr) {
-        if ino == 1 {
-            reply.attr(&TTL, &ROOT_DIR_ATTR);
-        } else if ino >= 2 && ino <= (FILES_COUNT + 1) {
-            let file_attr = FileAttr { ino, ..FILE_ATTR };
-            reply.attr(&TTL, &file_attr);
-        } else {
-            reply.error(ENOENT);
+        match inode_to_file_attr(ino) {
+            Some(attr) => reply.attr(&TTL, &attr),
+            None => reply.error(ENOENT),
         }
     }
 
@@ -153,7 +138,7 @@ impl Filesystem for PlentyFS {
 
         if offset <= 1 {
             // TODO: handle possibility of buffer being full
-            let _ = reply.add(1, 1, FileType::Directory, ".");
+            let _ = reply.add(1, 1, FileType::Directory, "..");
         }
 
         if offset >= 2 {
@@ -172,6 +157,30 @@ impl Filesystem for PlentyFS {
             );
         }
         reply.ok();
+    }
+}
+
+/// Convert filename into an inode number. Note that the inode might not actually exist.
+///
+/// Returns `None` if conversion couldn't be performed (most probably because the filename is
+/// malformed).
+fn filename_to_inode(name: &OsStr) -> Option<u64> {
+    name.to_str()
+        .and_then(|s| s.parse::<u64>().ok())
+        // Filenames start at 0, but inodes for these files start at 2.
+        .and_then(|file_number| Some(file_number + 2))
+}
+
+/// Convert inode number into a `FileAttr` structure.
+///
+/// Returns `None` if the file doesn't exist.
+fn inode_to_file_attr(ino: u64) -> Option<FileAttr> {
+    if ino == 1 {
+        Some(ROOT_DIR_ATTR)
+    } else if ino >= 2 && ino <= (FILES_COUNT + 1) {
+        Some(FileAttr { ino, ..FILE_ATTR })
+    } else {
+        None
     }
 }
 
