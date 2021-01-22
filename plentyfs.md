@@ -15,11 +15,12 @@ how they are verified in an automated manner.
 
 ## Smoke test
 
-This scenario verifies that PlentyFS works at all.
+This scenario verifies that PlentyFS works at all. We expect the root of
+PlentyFS to contain 10,000 ordinary files and a directory called _.plentyfs_.
 
 ~~~scenario
 given a PlentyFS mounted at mnt
-then there are 10000 files under mnt
+then there are 10001 files under mnt
 ~~~
 
 
@@ -62,10 +63,10 @@ option.
 
 ~~~scenario
 given a PlentyFS mounted at mnt with options seed=b1a914b7e0d996a8
-then there are a file at mnt/1 that starts with 0x1df2c952085c9471
-then there are a file at mnt/2 that starts with 0x7e56b30ef2e3d19b
-then there are a file at mnt/3 that starts with 0xf2319fa6ef40322c
-then there are a file at mnt/5 that starts with 0x307de35f4d9ad2a1
+then there are a file at mnt/1 that starts with 0x7da14ac962299c89
+then there are a file at mnt/2 that starts with 0x2f016e5b70122476
+then there are a file at mnt/3 that starts with 0xd8ab69b279bf68e2
+then there are a file at mnt/5 that starts with 0xae6efee6824678c2
 ~~~
 
 ### Errors if seed is empty
@@ -110,16 +111,42 @@ then stderr is exactly "Error: value `random' for parameter `seed' is not a hexa
 ~~~
 
 
+## PlentyFS provides its current seed via _.plentyfs/seed_
+
+As described in the previous section, the contents of a mounted PlentyFS
+filesystem are derived from a single 64-bit number, called "seed". If the user
+doesn't provide it, PlentyFS asks the operating system to generate one. But what
+if the user finds the resulting filesystem so interesting that they want to
+re-create it later? To facilitate that use-case, PlentyFS provides its current
+seed via a file called _.plentyfs/seed_.
+
+### _.plentyfs/seed_ is not empty even if user didn't provide a seed
+
+~~~scenario
+given a PlentyFS mounted at mnt
+then file mnt/.plentyfs/seed is not empty
+~~~
+
+### _.plentyfs/seed_ contains the seed provided on the command line
+
+~~~scenario
+given a PlentyFS mounted at mnt with options seed=2490d7f7528f40b7
+then file mnt/.plentyfs/seed contains "2490d7f7528f40b7"
+~~~
+
+
 ---
 title: PlentyFS - read-only, on-demand file system
 author: Alexander Batischev
 template: python
 bindings:
 - subplot/plentyfs.yaml
+- subplot/vendored/files.yaml
 - subplot/vendored/runcmd.yaml
 functions:
-- subplot/vendored/daemon.py
 - subplot/plentyfs.py
+- subplot/vendored/daemon.py
+- subplot/vendored/files.py
 - subplot/vendored/runcmd.py
 ...
 
