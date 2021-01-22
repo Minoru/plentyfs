@@ -15,11 +15,12 @@ how they are verified in an automated manner.
 
 ## Smoke test
 
-This scenario verifies that PlentyFS works at all.
+This scenario verifies that PlentyFS works at all. We expect the root of
+PlentyFS to contain 10,000 ordinary files and a directory called _.plentyfs_.
 
 ~~~scenario
 given a PlentyFS mounted at mnt
-then there are 10000 files under mnt
+then there are 10001 files under mnt
 ~~~
 
 
@@ -62,10 +63,10 @@ option.
 
 ~~~scenario
 given a PlentyFS mounted at mnt with options seed=b1a914b7e0d996a8
-then there are a file at mnt/1 that starts with 0x1df2c952085c9471
-then there are a file at mnt/2 that starts with 0x7e56b30ef2e3d19b
-then there are a file at mnt/3 that starts with 0xf2319fa6ef40322c
-then there are a file at mnt/5 that starts with 0x307de35f4d9ad2a1
+then there are a file at mnt/1 that starts with 0x7da14ac962299c89
+then there are a file at mnt/2 that starts with 0x2f016e5b70122476
+then there are a file at mnt/3 that starts with 0xd8ab69b279bf68e2
+then there are a file at mnt/5 that starts with 0xae6efee6824678c2
 ~~~
 
 ### Errors if seed is empty
@@ -130,7 +131,7 @@ then file mnt/.plentyfs/seed is not empty
 
 ~~~scenario
 given a PlentyFS mounted at mnt with options seed=2490d7f7528f40b7
-then file mnt/.plentyfs/seed contains "2490d7f7528f40b7\n"
+then file mnt/.plentyfs/seed contains "2490d7f7528f40b7"
 ~~~
 
 
