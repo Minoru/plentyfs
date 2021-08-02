@@ -7,8 +7,8 @@ set -euo pipefail
 cargo build
 cargo test
 
-sp-docgen plentyfs.md -o plentyfs.pdf
-sp-docgen plentyfs.md -o plentyfs.html
-sp-codegen plentyfs.md -o test.py
+subplot docgen plentyfs.md -o plentyfs.pdf
+subplot docgen plentyfs.md -o plentyfs.html
+subplot codegen plentyfs.md -o test.py
 rm -f test.log
 python3 test.py --log test.log
