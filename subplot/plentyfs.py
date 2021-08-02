@@ -7,7 +7,7 @@ def mount_plentyfs(ctx, dirname=None, options=None):
     logging.info(f"starting plentyfs at {dirname} with options {options}")
 
     srcdir = globals()["srcdir"]
-    daemon_start = globals()["daemon_start"]
+    _daemon_start = globals()["_daemon_start"]
 
     os.mkdir(dirname)
     plentyfs = os.path.join(srcdir, "target", "debug", "plentyfs")
@@ -17,7 +17,7 @@ def mount_plentyfs(ctx, dirname=None, options=None):
     else:
         argv = f"-o {options} -- {dirname}"
 
-    daemon_start(ctx, plentyfs, argv)
+    _daemon_start(ctx, plentyfs, argv, "plentyfs")
 
     # Wait for plentyfs to have started, up to two seconds.
     started = time.time()
@@ -29,7 +29,7 @@ def mount_plentyfs(ctx, dirname=None, options=None):
     ctx["mount-point"] = dirname
 
 
-def unmount_plentyfs(ctx):
+def unmount_plentyfs(ctx, dirname=None, options=None):
     runcmd_run = globals()["runcmd_run"]
     runcmd_exit_code_is = globals()["runcmd_exit_code_is"]
 
@@ -43,7 +43,7 @@ def run_plentyfs(ctx, arguments=None):
     runcmd_try_to_run = globals()["runcmd_try_to_run"]
     srcdir = globals()["srcdir"]
     plentyfs = os.path.join(srcdir, "target", "debug", "plentyfs")
-    runcmd_try_to_run(ctx, plentyfs, arguments)
+    runcmd_try_to_run(ctx, plentyfs, arguments or "")
 
 
 def file_count_is(ctx, count=None, dirname=None):

@@ -138,15 +138,14 @@ then file mnt/.plentyfs/seed contains "2490d7f7528f40b7"
 ---
 title: PlentyFS - read-only, on-demand file system
 author: Alexander Batischev
-template: python
 bindings:
 - subplot/plentyfs.yaml
-- subplot/vendored/files.yaml
-- subplot/vendored/runcmd.yaml
+- lib/files.yaml
+- lib/runcmd.yaml
+template: python
 functions:
 - subplot/plentyfs.py
-- subplot/vendored/daemon.py
-- subplot/vendored/files.py
-- subplot/vendored/runcmd.py
+- lib/daemon.py
+- lib/files.py
+- lib/runcmd.py
 ...
-
